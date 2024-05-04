@@ -1,15 +1,5 @@
-# Assigment 2 Fundamentos de Procesamiento de Imágenes
+# Procesamiento de Imagenes
 
-Daniel Alejandro Martínez Castro  
-<daniel.martinezc@usm.cl>
+Repository for assigments of Procesamiento de Imagenes IEE-2714 2024-01
 
-## Requirements
-
-Python >= 3.10.6  
-opencv-python  
-numpy  
-matplotlib  
-ipykernel
-
-## Usage
-To run the jupiter notebook without anaconda in visual studio code ipykernel must be installed.
+Daniel Martínez
