@@ -12,6 +12,9 @@ function assignment_4_question_3()
     
     car_deconv = deconvwnr(car_data, PSF, snr);
     
+    %save image
+    imwrite(car_deconv, 'images/car_02.png');
+
     figure, imshow(car_deconv);
     title('Deblurred Image')
 end

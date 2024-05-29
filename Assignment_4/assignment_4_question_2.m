@@ -1,30 +1,64 @@
 function assignment_4_question_2()
-    flower_data = load('data/flower.mat').blurred_image;
-   
-    flower_data = double(flower_data);
-    min_val = 0.04230597702414099;
-    max_val = 0.9403096162968041;
-    flower_data = (flower_data - min_val) / (max_val - min_val) * 255;
 
-    F = fft2(flower_data);
+    input_image = load('data/flower.mat').blurred_image;
+      
 
-    % Crear el kernel en el dominio de la frecuencia
-    kernel_size = 20;
-    sigma = 1;
-    PSF = fspecial('gaussian', [kernel_size, kernel_size], sigma);
-    PSF = psf2otf(PSF, size(F));
-    
-    % Calcular la inversa de la función de transferencia
-    H = conj(PSF) ./ (abs(PSF).^2 + 0.0001); % Evitar división por cero
-    
-    % Aplicar la deconvolución en el dominio de la frecuencia
-    deconv_F = F .* H;
-    
-    % Calcular la inversa de la transformada de Fourier 2D
-    deconv_img = ifft2(deconv_F);
-    
-    % Convertir la imagen de vuelta a valores de píxeles en el rango [0, 255]
-    deconv_img = uint8(real(deconv_img));
+    [M, N] = size(input_image); 
+      
 
-    imshow(deconv_img)
+    FT_img = fft2(double(input_image)); 
+    
+
+    hFig = figure('Name', 'Image Processing with Adjustable Parameters');
+    
+    subplot(2, 1, 1);
+    imshow(input_image, []);
+    title('Input Image');
+    
+
+    subplot(2, 1, 2);
+    hOutputImage = imshow(zeros(M, N), []);
+    title('Output Image');
+    
+
+    hSliderN = uicontrol('Style', 'slider', ...
+                         'Min', 0, 'Max', 10, 'Value', 2, ...
+                         'Position', [20, 20, 300, 20], ...
+                         'Callback', @updateOutputImage);
+    hSliderD0 = uicontrol('Style', 'slider', ...
+                          'Min', -10, 'Max', 100, 'Value', 10, ...
+                          'Position', [20, 60, 300, 20], ...
+                          'Callback', @updateOutputImage);
+ 
+    uicontrol('Style', 'text', 'Position', [330, 20, 50, 20], ...
+              'String', 'n');
+    uicontrol('Style', 'text', 'Position', [330, 60, 50, 20], ...
+              'String', 'D0');
+    
+
+    updateOutputImage();
+    
+    function updateOutputImage(~, ~)
+        % Get slider values
+        n = round(get(hSliderN, 'Value'));
+        D0 = get(hSliderD0, 'Value');
+
+        disp(['n = ', num2str(n), ', D0 = ', num2str(D0)]);
+        
+        u = 0:(M-1); 
+        v = 0:(N-1); 
+        idx = find(u > M/2); 
+        u(idx) = u(idx) - M; 
+        idy = find(v > N/2); 
+        v(idy) = v(idy) - N; 
+        [V, U] = meshgrid(v, u); 
+        D = sqrt(U.^2 + V.^2); 
+        H = 1 ./ (1 + (D0 ./ D).^(2*n)); 
+
+        G = H .* FT_img; 
+        output_image = real(ifft2(double(G)));
+        
+        % Update the output image
+        set(hOutputImage, 'CData', output_image);
+    end
 end
