@@ -1,64 +1,38 @@
 function assignment_4_question_2()
-
+    
     input_image = load('data/flower.mat').blurred_image;
-      
-
-    [M, N] = size(input_image); 
-      
-
-    FT_img = fft2(double(input_image)); 
+    
+    initial_psfRadius = 30; 
+    estimated_nsr = 0.000001;
+    
+    hFig = figure('Name', 'Deconvolution with Adjustable PSF Radius');
+    
+    psf = fspecial('disk', initial_psfRadius);
+    deconvolvedImage = deconvwnr(input_image, psf, estimated_nsr);
+    hImage = imshow(deconvolvedImage);
+    title('Deconvolved Image');
+    
+    hSlider = uicontrol('Style', 'slider', ...
+        'Min', 1, 'Max', 100, 'Value', initial_psfRadius, ...
+        'Units', 'normalized', 'Position', [0.2, 0.02, 0.6, 0.05], ...
+        'Callback', @updateImage);
     
 
-    hFig = figure('Name', 'Image Processing with Adjustable Parameters');
-    
-    subplot(2, 1, 1);
-    imshow(input_image, []);
-    title('Input Image');
-    
+    hLabel = uicontrol('Style', 'text', ...
+        'Position', [0.1 0.02 0.1 0.05], ...
+        'String', 'PSF Radius:');
 
-    subplot(2, 1, 2);
-    hOutputImage = imshow(zeros(M, N), []);
-    title('Output Image');
-    
+    updateImage();
 
-    hSliderN = uicontrol('Style', 'slider', ...
-                         'Min', 0, 'Max', 10, 'Value', 2, ...
-                         'Position', [20, 20, 300, 20], ...
-                         'Callback', @updateOutputImage);
-    hSliderD0 = uicontrol('Style', 'slider', ...
-                          'Min', -10, 'Max', 100, 'Value', 10, ...
-                          'Position', [20, 60, 300, 20], ...
-                          'Callback', @updateOutputImage);
- 
-    uicontrol('Style', 'text', 'Position', [330, 20, 50, 20], ...
-              'String', 'n');
-    uicontrol('Style', 'text', 'Position', [330, 60, 50, 20], ...
-              'String', 'D0');
-    
+    function updateImage(~, ~)
 
-    updateOutputImage();
-    
-    function updateOutputImage(~, ~)
-        % Get slider values
-        n = round(get(hSliderN, 'Value'));
-        D0 = get(hSliderD0, 'Value');
-
-        disp(['n = ', num2str(n), ', D0 = ', num2str(D0)]);
+        psfRadius = round(get(hSlider, 'Value'));
         
-        u = 0:(M-1); 
-        v = 0:(N-1); 
-        idx = find(u > M/2); 
-        u(idx) = u(idx) - M; 
-        idy = find(v > N/2); 
-        v(idy) = v(idy) - N; 
-        [V, U] = meshgrid(v, u); 
-        D = sqrt(U.^2 + V.^2); 
-        H = 1 ./ (1 + (D0 ./ D).^(2*n)); 
+        disp(['PSF Radius: ', num2str(psfRadius)]);
 
-        G = H .* FT_img; 
-        output_image = real(ifft2(double(G)));
-        
-        % Update the output image
-        set(hOutputImage, 'CData', output_image);
+        psf = fspecial('disk', psfRadius);
+        deconvolvedImage = deconvwnr(input_image, psf, estimated_nsr);
+
+        set(hImage, 'CData', deconvolvedImage);
     end
 end
